@@ -1,0 +1,9 @@
+color $rojo --> #FFFFFF;
+repetir(4) {
+    atras();
+    izquierda();
+    izquierda();
+}
+
+color $azul --> #FFA0A0;
+adelante();
