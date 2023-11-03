@@ -317,6 +317,7 @@ public class CompiladorController {
 
             // Agregar código Java al archivo
             writer.write("package salida;\n\n");
+            writer.write("import java.util.Scanner;\n\n");
             writer.write("public class " + nombreArchivo + " {\n");
             writer.write("    public static void main(String[] args) {\n");
             writer.write("\t" + translateCode());
@@ -331,16 +332,6 @@ public class CompiladorController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-    
-    private String translateCode() {
-        CodeBlock codeBlock = Functions.splitCodeInCodeBlocks(tokens, "{", "}", ";");
-        ArrayList<String> blocksOfCode = codeBlock.getBlocksOfCodeInOrderOfExec();
-        String translatedCode = "System.out.println(\"Hola, mundo!\");\n";
-        
-        System.out.println(blocksOfCode);
-        
-        return translatedCode;
     }
     
     public static String convertToPascalCase(String fileName) {
@@ -364,5 +355,44 @@ public class CompiladorController {
         }
 
         return pascalCaseName.toString();
+    }
+    
+    private String translateCode() {
+        CodeBlock codeBlock = Functions.splitCodeInCodeBlocks(tokens, "{", "}", ";");
+        ArrayList<String> blocksOfCode = codeBlock.getBlocksOfCodeInOrderOfExec();
+        String translatedCode = "";
+        
+        for (int i = 0; i < blocksOfCode.size(); i++) {
+            String blockOfCode = blocksOfCode.get(i);
+            String[] sentences = blockOfCode.split(";");
+            for (String sentence : sentences) {
+                sentence = sentence.trim();
+                
+                if (sentence.startsWith("int")) {
+                    translatedCode = translatedCode + "\t" + sentence + ";\n";
+                } else if (sentence.startsWith("printf")) {
+                    String translatedSentence = sentence.replace("printf", "System.out.printf");
+                    translatedCode = translatedCode + "\t" + translatedSentence + ";\n";
+                } else if (sentence.startsWith("scanf")) {
+                    String translatedSentence = convertirScanfACodigoJava(sentence.replace(" ", ""));
+                    translatedCode = translatedCode + translatedSentence;
+                }
+            }
+        }
+        
+        return translatedCode;
+    }
+    
+    private String convertirScanfACodigoJava(String codigoC) {
+        String parametros = codigoC.substring(7, codigoC.length() - 1);
+        String[] parametrosVariables = parametros.split(",");
+        String javaCode = "";
+        
+        for (int i = 1; i < parametrosVariables.length; i++) {
+            String variable = parametrosVariables[i].substring(1);
+            javaCode += "\t" + variable + " = new Scanner(System.in).nextInt();\n";
+        }
+        
+        return javaCode;
     }
 }
