@@ -1,7 +1,4 @@
-for (int i = 0; i < 5; i++)
-
-while (j<10)
-
-for (int i = 0; i < 5; i++) {
-   hola = 2;
-}
+int num1 = 1;
+int num2 = 1 + 3;
+int num3 = num1 + num2;
+// printf("num 1: %d", num1);

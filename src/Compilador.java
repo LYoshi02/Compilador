@@ -81,7 +81,7 @@ public class Compilador extends javax.swing.JFrame {
         byte[] bytesText = jtpCode.getText().getBytes();
 
         clearFields();
-        controladorCompilador.compilar(bytesText);
+        controladorCompilador.compilar(bytesText, getTitle());
         fillTableTokens();
         printConsole();
         codeHasBeenCompiled = true;

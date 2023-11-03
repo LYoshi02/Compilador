@@ -1,14 +1,17 @@
 
+import compilerTools.CodeBlock;
 import compilerTools.ErrorLSSL;
+import compilerTools.Functions;
 import compilerTools.Grammar;
 import compilerTools.Production;
-import compilerTools.TextColor;
 import compilerTools.Token;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -51,11 +54,12 @@ public class CompiladorController {
         return identProd;
     }
     
-    public void compilar(byte[] bytesCodeText) {
+    public void compilar(byte[] bytesCodeText, String fileName) {
         resetearCompilador();
         lexicalAnalysis(bytesCodeText);
         syntacticAnalysis();
 //        semanticAnalysis();
+        generateSourceFile(fileName);
     }
     
     private void resetearCompilador() {
@@ -291,5 +295,74 @@ public class CompiladorController {
             System.out.println(id.lexemeRank(0, -1));
             System.out.println(id.lexicalCompRank(0, -1));
         }
+    }
+    
+    private void generateSourceFile(String fileName) {
+        String rutaCarpeta = System.getProperty("user.dir")+"/src/salida";
+        String nombreArchivo = convertToPascalCase(fileName);
+        String rutaArchivo = rutaCarpeta + "/" + nombreArchivo + ".java";
+
+        try {
+            // Crear la carpeta si no existe
+            File carpeta = new File(rutaCarpeta);
+            if (!carpeta.exists()) {
+                carpeta.mkdirs();
+            }
+            
+            // Crear un objeto FileWriter para escribir en el archivo
+            FileWriter fileWriter = new FileWriter(rutaArchivo);
+
+            // Crear un objeto BufferedWriter para escribir en el archivo de manera eficiente
+            BufferedWriter writer = new BufferedWriter(fileWriter);
+
+            // Agregar código Java al archivo
+            writer.write("package salida;\n\n");
+            writer.write("public class " + nombreArchivo + " {\n");
+            writer.write("    public static void main(String[] args) {\n");
+            writer.write("\t" + translateCode());
+            writer.write("    }\n");
+            writer.write("}\n");
+
+            // Cerrar el BufferedWriter y FileWriter
+            writer.close();
+            fileWriter.close();
+
+            System.out.println("Archivo generado exitosamente.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private String translateCode() {
+        CodeBlock codeBlock = Functions.splitCodeInCodeBlocks(tokens, "{", "}", ";");
+        ArrayList<String> blocksOfCode = codeBlock.getBlocksOfCodeInOrderOfExec();
+        String translatedCode = "System.out.println(\"Hola, mundo!\");\n";
+        
+        System.out.println(blocksOfCode);
+        
+        return translatedCode;
+    }
+    
+    public static String convertToPascalCase(String fileName) {
+        // Eliminar la extensión ".c" si está presente
+        if (fileName.endsWith(".c")) {
+            fileName = fileName.substring(0, fileName.length() - 2);
+        }
+
+        // Dividir el nombre en palabras utilizando "-", "_" y mayúsculas como separadores
+        String[] parts = fileName.split("[-_A-Z]");
+
+        StringBuilder pascalCaseName = new StringBuilder();
+        for (String part : parts) {
+            if (!part.isEmpty()) {
+                // Convertir la primera letra de cada palabra a mayúscula
+                pascalCaseName.append(Character.toUpperCase(part.charAt(0)));
+                if (part.length() > 1) {
+                    pascalCaseName.append(part.substring(1).toLowerCase());
+                }
+            }
+        }
+
+        return pascalCaseName.toString();
     }
 }
