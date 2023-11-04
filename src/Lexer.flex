@@ -96,6 +96,11 @@ false { return token(yytext(), "OPERADOR_BOOLEANO", yyline, yycolumn); }
 \/\= { return token(yytext(), "OPERADOR_ATRIBUCION", yyline, yycolumn); }
 
 
+/* -- FUNCIONES -- */
+printf { return token(yytext(), "PRINTF", yyline, yycolumn); }
+scanf { return token(yytext(), "SCANF", yyline, yycolumn); }
+
+
 /* -- OTROS -- */
 /* main */
 main { return token(yytext(), "MAIN", yyline, yycolumn); }
@@ -111,6 +116,10 @@ main { return token(yytext(), "MAIN", yyline, yycolumn); }
 /* Comillas */
 \' { return token(yytext(), "COMILLAS_SIMPLE", yyline, yycolumn); }
 \" { return token(yytext(), "COMILLAS_DOBLE", yyline, yycolumn); }
+
+/* Otros simbolos */
+\& { return token(yytext(), "AMPERSAND", yyline, yycolumn); }
+\% { return token(yytext(), "PORCIENTO", yyline, yycolumn); }
 
 /* Identificador */
 {Letra}({Letra}|{Digito})* { return token(yytext(), "IDENTIFICADOR", yyline, yycolumn); }

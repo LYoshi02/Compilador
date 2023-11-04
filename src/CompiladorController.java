@@ -102,6 +102,7 @@ public class CompiladorController {
 
         /* Agrupacion de operaciones algebraicas */
         agruparExpresionesAlgebraicas(gramatica);
+        definirCadenas(gramatica);
         definirVariablesNumericas(gramatica);
         definirAsignacionesVariables(gramatica);
 
@@ -109,8 +110,9 @@ public class CompiladorController {
 
         agruparEstructurasCondicionales(gramatica);
         agruparEstructurasIterativas(gramatica);
+        agruparLlamadosFunciones(gramatica);
 
-        gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | ASIGNACION_VARIABLE)");
+        gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | ASIGNACION_VARIABLE | LLAMADO_FUNCION)");
 
         gramatica.group("ESTRUCTURA_CONDICIONAL_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
         gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
@@ -138,6 +140,11 @@ public class CompiladorController {
 
         gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO PUNTO_COMA", true, identProd);
         gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR PUNTO_COMA");
+    }
+    
+    private void definirCadenas(Grammar gramatica) {
+        gramatica.group("CADENA", "COMILLAS_DOBLE (IDENTIFICADOR | PORCIENTO)+ COMILLAS_DOBLE", true);
+        gramatica.group("CADENA_VACIA", "COMILLAS_DOBLE COMILLAS_DOBLE", true);
     }
 
     private void definirAsignacionesVariables(Grammar gramatica) {
@@ -173,6 +180,11 @@ public class CompiladorController {
         gramatica.group("ESTRUCTURA_REPETICION_WHILE", "WHILE PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE");
     }
     
+    private void agruparLlamadosFunciones(Grammar gramatica) {
+        gramatica.group("LLAMADO_FUNCION", "PRINTF PARENTESIS_APERTURA CADENA (COMA IDENTIFICADOR)* PARENTESIS_CIERRE PUNTO_COMA");
+        gramatica.group("LLAMADO_FUNCION", "SCANF PARENTESIS_APERTURA CADENA (COMA AMPERSAND IDENTIFICADOR)+ PARENTESIS_CIERRE PUNTO_COMA");
+    }
+
     private void sampleSyntacticAnalysis() {
         Grammar gramatica = new Grammar(tokens, errors);
 
@@ -327,7 +339,7 @@ public class CompiladorController {
             writer.write("import java.util.Scanner;\n\n");
             writer.write("public class " + nombreArchivo + " {\n");
             writer.write("    public static void main(String[] args) {\n");
-            writer.write("\t" + translateCode());
+            writer.write(translateCode());
             writer.write("    }\n");
             writer.write("}\n");
 
