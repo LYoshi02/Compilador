@@ -1,10 +1,7 @@
 int num1 = 1;
-int num2 = 1 + 3;
-int num3;
 
-printf("Ingrese un numero ");
-scanf("%d", &num3);
-
-printf("num1 %d", num1);
-printf("num2 %d", num2);
-printf("num3 %d", num3);
+for(int i = 0; i < 5; i++) {
+    if (num1 == 1) {
+        printf("num1 %d", num1);
+    }
+}
