@@ -93,77 +93,84 @@ public class CompiladorController {
             Logger.getLogger(Compilador.class.getName()).log(Level.SEVERE, null, ex);
         }        
     }
-    
+
     private void syntacticAnalysis() {
         Grammar gramatica = new Grammar(tokens, errors);
 
         /* Eliminacion de errores */
         gramatica.delete(new String[]{"ERROR", "ERROR_1"}, 1);
-        
+
         /* Agrupacion de operaciones algebraicas */
+        agruparExpresionesAlgebraicas(gramatica);
+        definirVariablesNumericas(gramatica);
+        definirAsignacionesVariables(gramatica);
+
+        agruparExpresionesLogicas(gramatica);
+
+        agruparEstructurasCondicionales(gramatica);
+        agruparEstructurasIterativas(gramatica);
+
+        gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | ASIGNACION_VARIABLE)");
+
+        gramatica.group("ESTRUCTURA_CONDICIONAL_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+
+        gramatica.group("ESTRUCTURA_REPETICION_FOR_COMPLETA", "ESTRUCTURA_REPETICION_FOR LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+        gramatica.group("ESTRUCTURA_REPETICION_WHILE_COMPLETA", "ESTRUCTURA_REPETICION_WHILE LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+
+        gramatica.group("SENTENCIA", "(SENTENCIA | ESTRUCTURA_CONDICIONAL_IF_COMPLETA | "
+                + "ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA | ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA"
+                + " | ESTRUCTURA_REPETICION_FOR_COMPLETA | ESTRUCTURA_REPETICION_WHILE_COMPLETA)");
+
+        gramatica.show();
+    }
+    
+        private void agruparExpresionesAlgebraicas(Grammar gramatica) {
         gramatica.loopForFunExecUntilChangeNotDetected(() -> {
-            gramatica.group("OPERACION_ALGEBRAICA", "PARENTESIS_APERTURA (NUMERO | OPERACION_ALGEBRAICA | IDENTIFICADOR) (OPERADOR_ALGEBRAICO) "
-                    + "(NUMERO | OPERACION_ALGEBRAICA | IDENTIFICADOR) PARENTESIS_CIERRE");
             gramatica.group("OPERACION_ALGEBRAICA", "(NUMERO | OPERACION_ALGEBRAICA | IDENTIFICADOR) (OPERADOR_ALGEBRAICO) "
                     + "(NUMERO | OPERACION_ALGEBRAICA | IDENTIFICADOR)");
         });
-        
+    }
+
+    private void definirVariablesNumericas(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
-        
-        /* Declaración de variables */
-        gramatica.group("VARIABLE", "TIPO_DATO IDENTIFICADOR OPERADOR_ASIGNACION (VALOR_NUMERICO)", true, identProd);
-        gramatica.group("VARIABLE", "TIPO_DATO IDENTIFICADOR");
-        
-        gramatica.group("ASIGNACION_VARIABLE", "IDENTIFICADOR OPERADOR_ASIGNACION (VALOR_NUMERICO)");
-        
-        /* Eliminacion de operadores de asignacion */
-        gramatica.delete("OPERADOR_ASIGNACION", 2, "Error sintactico {}: el operador de asignación no está en una declaración [#, %]");
-         
-        /* Agrupacion de expresiones logicas */
+
+        gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO PUNTO_COMA", true, identProd);
+        gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR PUNTO_COMA");
+    }
+
+    private void definirAsignacionesVariables(Grammar gramatica) {
+        gramatica.group("ASIGNACION_VARIABLE", "IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO PUNTO_COMA");
+    }
+
+    private void agruparExpresionesLogicas(Grammar gramatica) {
         gramatica.loopForFunExecUntilChangeNotDetected(() -> {
-//            gramatica.group("EXPRESION_LOGICA", "PARENTESIS_APERTURA (IDENTIFICADOR | OPERADOR_BOOLEANO | EXPRESION_LOGICA) "
-//                    + "(OPERADOR_LOGICO | OPERADOR_RELACIONAL) "
-//                    + "(IDENTIFICADOR | OPERADOR_BOOLEANO | EXPRESION_LOGICA) PARENTESIS_CIERRE");
             gramatica.group("EXPRESION_LOGICA", "(IDENTIFICADOR | OPERADOR_BOOLEANO | EXPRESION_LOGICA) "
                     + "(OPERADOR_LOGICO | OPERADOR_RELACIONAL) "
                     + "(IDENTIFICADOR | OPERADOR_BOOLEANO | EXPRESION_LOGICA)");
-            
+
             gramatica.group("EXPRESION_LOGICA", "OPERADOR_NOT (IDENTIFICADOR | EXPRESION_LOGICA)");
-//            gramatica.group("EXPRESION_LOGICA", "PARENTESIS_APERTURA OPERADOR_NOT (IDENTIFICADOR | EXPRESION_LOGICA) PARENTESIS_CIERRE");
-            
-//            gramatica.group("EXPRESION_LOGICA", "PARENTESIS_APERTURA (IDENTIFICADOR | OPERADOR_BOOLEANO | EXPRESION_LOGICA | VALOR_NUMERICO) "
-//                    + "OPERADOR_RELACIONAL "
-//                    + "(IDENTIFICADOR | OPERADOR_BOOLEANO | EXPRESION_LOGICA | VALOR_NUMERICO) PARENTESIS_CIERRE");
+
             gramatica.group("EXPRESION_LOGICA", "(IDENTIFICADOR | OPERADOR_BOOLEANO | EXPRESION_LOGICA | VALOR_NUMERICO) "
-                    + "OPERADOR_RELACIONAL "
+                    + "OPERADOR_RELACIONAL"
                     + "(IDENTIFICADOR | OPERADOR_BOOLEANO | EXPRESION_LOGICA | VALOR_NUMERICO)");
         });
-        
-        /* Agrupacion de estructuras de repeticion */
+    }
+
+    private void agruparEstructurasCondicionales(Grammar gramatica) {
+        gramatica.group("ESTRUCTURA_CONDICIONAL_IF", "IF PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE");
+        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF", "ELSE_IF PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE");
+        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE", "ELSE");
+    }
+
+    private void agruparEstructurasIterativas(Grammar gramatica) {
         gramatica.group("INCREMENTO", "IDENTIFICADOR OPERADOR_INCREMENTO");
         gramatica.group("DECREMENTO", "IDENTIFICADOR OPERADOR_DECREMENTO");
-        gramatica.group("ESTRUCTURA_REPETICION_FOR", "FOR PARENTESIS_APERTURA "
-                + "VARIABLE PUNTO_COMA EXPRESION_LOGICA PUNTO_COMA (INCREMENTO | DECREMENTO)"
-                + "PARENTESIS_CIERRE");
-        gramatica.group("ESTRUCTURA_REPETICION_WHILE", "WHILE PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE");
 
-        /* Agrupacion de estructuras condicionales */
-        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF", "LLAVE_CIERRE ELSE_IF PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE LLAVE_APERTURA");
-        gramatica.group("ESTRUCTURA_CONDICIONAL_IF", "IF PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE LLAVE_APERTURA");
-        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE", "LLAVE_CIERRE ELSE LLAVE_APERTURA");
-        
-        /* Agrupación de Sentencias */
-        gramatica.group("VARIABLE_PUNTO_COMA", "VARIABLE PUNTO_COMA", true);
-        gramatica.group("ASIGNACION_VARIABLE_PUNTO_COMA", "ASIGNACION_VARIABLE PUNTO_COMA", true);
-        gramatica.group("SENTENCIAS", "(VARIABLE_PUNTO_COMA | ASIGNACION_VARIABLE_PUNTO_COMA)+");
-        
-        gramatica.loopForFunExecUntilChangeNotDetected(() -> {
-            gramatica.group("ESTRUCTURA_REPETICION_COMPLETA_CON_LLAVES",
-                    "(ESTRUCTURA_REPETICION_FOR | ESTRUCTURA_REPETICION_WHILE) LLAVE_APERTURA (SENTENCIAS)? LLAVE_CIERRE", true);
-            gramatica.group("SENTENCIAS", "(SENTENCIAS | ESTRUCTURA_REPETICION_COMPLETA_CON_LLAVES)+");
-        });
-        
-        gramatica.show();
+        gramatica.group("ESTRUCTURA_REPETICION_FOR", "FOR PARENTESIS_APERTURA "
+                + "VARIABLE_NUMERICA EXPRESION_LOGICA PUNTO_COMA (INCREMENTO | DECREMENTO) PARENTESIS_CIERRE");
+        gramatica.group("ESTRUCTURA_REPETICION_WHILE", "WHILE PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE");
     }
     
     private void sampleSyntacticAnalysis() {
