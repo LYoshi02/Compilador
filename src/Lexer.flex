@@ -32,11 +32,9 @@ Comentario = {ComentarioTradicional} | {FinDeLineaComentario} | {ComentarioDeDoc
 
 
 /* -- TIPOS DE DATOS -- */
-int |
-char |
-float |
-double { return token(yytext(), "TIPO_DATO", yyline, yycolumn); }
-
+int { return token(yytext(), "INTEGER", yyline, yycolumn); }
+char { return token(yytext(), "CHAR", yyline, yycolumn); }
+float { return token(yytext(), "FLOAT", yyline, yycolumn); }
 
 /* -- PALABRAS RESERVADAS -- */
 /* Bucles */
