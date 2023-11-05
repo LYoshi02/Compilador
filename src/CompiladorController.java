@@ -343,9 +343,9 @@ public class CompiladorController {
             writer.write("package salida;\n\n");
             writer.write("import java.util.Scanner;\n\n");
             writer.write("public class " + nombreArchivo + " {\n");
-            writer.write("    public static void main(String[] args) {\n");
+            writer.write(generarEspacios(4) + "public static void main(String[] args) {\n");
             writer.write(translateCode());
-            writer.write("    }\n");
+            writer.write(generarEspacios(4) + "}\n");
             writer.write("}\n");
 
             // Cerrar el BufferedWriter y FileWriter
@@ -385,7 +385,7 @@ public class CompiladorController {
         CodeBlock codeBlock = Functions.splitCodeInCodeBlocks(tokens, "{", "}", ";");
         ArrayList<String> blocksOfCode = codeBlock.getBlocksOfCodeInOrderOfExec();
 
-        return handleCodeTranslation(blocksOfCode, 1);
+        return handleCodeTranslation(blocksOfCode, 2);
     }
 
     private String handleCodeTranslation(ArrayList<String> blocksOfCode, int nivel) {
@@ -402,13 +402,13 @@ public class CompiladorController {
             posicionMarcador = CodeBlock.getPositionOfBothMarkers(blocksOfCode, blockOfCode);
             block = new ArrayList<>(blocksOfCode.subList(posicionMarcador[0] + 1, posicionMarcador[1]));
 
-            translatedCode += handleCodeTranslation(block, nivel + 1);
+            translatedCode += handleCodeTranslation(block, nivel);
         } else {
             ArrayList<String> sentences = separarSentencias(blockOfCode);
-
+            
             for (String sentence : sentences) {
                 sentence = sentence.trim();
-
+                
                 if (sentence.startsWith("int")) {
                     translatedCode += generarEspacios(nivel * 4) + sentence + ";\n";
                 } else if (sentence.startsWith("for") || sentence.startsWith("if")) {
@@ -417,7 +417,7 @@ public class CompiladorController {
                     block = new ArrayList<>(blocksOfCode.subList(posicionMarcador[0] + 1, posicionMarcador[1]));
 
                     translatedCode += generarEspacios(nivel * 4) + sentence + " {\n";
-                    translatedCode += generarEspacios(nivel * 2) + handleCodeTranslation(block, nivel + 1);
+                    translatedCode += handleCodeTranslation(block, nivel + 1);
                     translatedCode += generarEspacios(nivel * 4) + "}\n";
                 } else if (sentence.startsWith("printf")) {
                     String translatedSentence = sentence.replace("printf", "System.out.printf");
