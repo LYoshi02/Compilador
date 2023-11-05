@@ -102,35 +102,25 @@ public class CompiladorController {
     private void syntacticAnalysis() {
         Grammar gramatica = new Grammar(tokens, errors);
 
-        /* Eliminacion de errores */
-        gramatica.delete(new String[]{"ERROR", "ERROR_1"}, 1);
+        eliminarTokensDeErrorLexico(gramatica);
 
-        /* Agrupacion de operaciones algebraicas */
         agruparExpresionesAlgebraicas(gramatica);
+
         definirCadenas(gramatica);
         definirVariablesNumericas(gramatica);
         definirAsignacionesVariables(gramatica);
 
         agruparExpresionesLogicas(gramatica);
-
         agruparEstructurasCondicionales(gramatica);
         agruparEstructurasIterativas(gramatica);
         agruparLlamadosFunciones(gramatica);
-
-        gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | ASIGNACION_VARIABLE | LLAMADO_FUNCION)");
-
-        gramatica.group("ESTRUCTURA_CONDICIONAL_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
-        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
-        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
-
-        gramatica.group("ESTRUCTURA_REPETICION_FOR_COMPLETA", "ESTRUCTURA_REPETICION_FOR LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
-        gramatica.group("ESTRUCTURA_REPETICION_WHILE_COMPLETA", "ESTRUCTURA_REPETICION_WHILE LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
-
-        gramatica.group("SENTENCIA", "(SENTENCIA | ESTRUCTURA_CONDICIONAL_IF_COMPLETA | "
-                + "ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA | ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA"
-                + " | ESTRUCTURA_REPETICION_FOR_COMPLETA | ESTRUCTURA_REPETICION_WHILE_COMPLETA)");
+        agruparSentencias(gramatica);
 
         gramatica.show();
+    }
+
+    private void eliminarTokensDeErrorLexico(Grammar gramatica) {
+        gramatica.delete(new String[]{"ERROR", "ERROR_1"}, 1);
     }
 
     private void agruparExpresionesAlgebraicas(Grammar gramatica) {
@@ -165,7 +155,7 @@ public class CompiladorController {
 
     private void definirAsignacionesVariables(Grammar gramatica) {
         gramatica.group("ASIGNACION_VARIABLE", "IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO PUNTO_COMA");
-        
+
         gramatica.group("ASIGNACION_VARIABLE", "IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO", 6,
                 "Error sintactico {}: falta ';' al final de la línea [#, %]");
     }
@@ -202,6 +192,21 @@ public class CompiladorController {
     private void agruparLlamadosFunciones(Grammar gramatica) {
         gramatica.group("LLAMADO_FUNCION", "PRINTF PARENTESIS_APERTURA CADENA (COMA IDENTIFICADOR)* PARENTESIS_CIERRE PUNTO_COMA");
         gramatica.group("LLAMADO_FUNCION", "SCANF PARENTESIS_APERTURA CADENA (COMA AMPERSAND IDENTIFICADOR)+ PARENTESIS_CIERRE PUNTO_COMA");
+    }
+
+    private void agruparSentencias(Grammar gramatica) {
+        gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | ASIGNACION_VARIABLE | LLAMADO_FUNCION)");
+
+        gramatica.group("ESTRUCTURA_CONDICIONAL_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+
+        gramatica.group("ESTRUCTURA_REPETICION_FOR_COMPLETA", "ESTRUCTURA_REPETICION_FOR LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+        gramatica.group("ESTRUCTURA_REPETICION_WHILE_COMPLETA", "ESTRUCTURA_REPETICION_WHILE LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+
+        gramatica.group("SENTENCIA", "(SENTENCIA | ESTRUCTURA_CONDICIONAL_IF_COMPLETA | "
+                + "ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA | ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA"
+                + " | ESTRUCTURA_REPETICION_FOR_COMPLETA | ESTRUCTURA_REPETICION_WHILE_COMPLETA)");
     }
 
     private void semanticAnalysis() {
