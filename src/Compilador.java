@@ -8,7 +8,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
-import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -21,7 +20,6 @@ public class Compilador extends javax.swing.JFrame {
     private String windowTitle;
     private Directory directorio;
     private Timer timerKeyReleased;
-    private boolean codeHasBeenCompiled = false;
     private CompiladorController controladorCompilador;
 
     /**
@@ -74,7 +72,6 @@ public class Compilador extends javax.swing.JFrame {
     private void clearFields() {
         Functions.clearDataInTable(tblTokens);
         jtaOutputConsole.setText("");
-        codeHasBeenCompiled = false;
     }
 
     private void compile() {
@@ -84,7 +81,6 @@ public class Compilador extends javax.swing.JFrame {
         controladorCompilador.compilar(bytesText, getTitle());
         fillTableTokens();
         printConsole();
-        codeHasBeenCompiled = true;
     }
 
     private void fillTableTokens() {
@@ -120,7 +116,6 @@ public class Compilador extends javax.swing.JFrame {
         jtpCode = new javax.swing.JTextPane();
         panelButtonCompilerExecute = new javax.swing.JPanel();
         btnCompilar = new javax.swing.JButton();
-        btnEjecutar = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jtaOutputConsole = new javax.swing.JTextArea();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -198,13 +193,6 @@ public class Compilador extends javax.swing.JFrame {
             }
         });
 
-        btnEjecutar.setText("Ejecutar");
-        btnEjecutar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnEjecutarActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout panelButtonCompilerExecuteLayout = new javax.swing.GroupLayout(panelButtonCompilerExecute);
         panelButtonCompilerExecute.setLayout(panelButtonCompilerExecuteLayout);
         panelButtonCompilerExecuteLayout.setHorizontalGroup(
@@ -212,17 +200,13 @@ public class Compilador extends javax.swing.JFrame {
             .addGroup(panelButtonCompilerExecuteLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnCompilar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnEjecutar)
-                .addContainerGap())
+                .addGap(0, 0, 0))
         );
         panelButtonCompilerExecuteLayout.setVerticalGroup(
             panelButtonCompilerExecuteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelButtonCompilerExecuteLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(panelButtonCompilerExecuteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnCompilar)
-                    .addComponent(btnEjecutar))
+                .addComponent(btnCompilar)
                 .addContainerGap(7, Short.MAX_VALUE))
         );
 
@@ -282,7 +266,7 @@ public class Compilador extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addContainerGap(8, Short.MAX_VALUE))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
 
         getContentPane().add(rootPanel);
@@ -338,21 +322,6 @@ public class Compilador extends javax.swing.JFrame {
             compile();
         }
     }//GEN-LAST:event_btnCompilarActionPerformed
-
-    private void btnEjecutarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEjecutarActionPerformed
-        btnCompilar.doClick();
-        ArrayList<ErrorLSSL> compilationErrors = controladorCompilador.getErrors();
-        
-        if (codeHasBeenCompiled) {
-            if (!compilationErrors.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "No se pudo ejecutar el codigo ya que se encontró uno o más errores");
-            } else {
-//                CodeBlock codeBlock = Functions.splitCodeInCodeBlocks(tokens, "{", "}", ";");
-//                ArrayList<String> blocksOfCode = codeBlock.getBlocksOfCodeInOrderOfExec();
-//                executeCode(blocksOfCode, 1);
-            }
-        }
-    }//GEN-LAST:event_btnEjecutarActionPerformed
 
     private void jtpCodeKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtpCodeKeyPressed
         boolean isTabKeyPressed = evt.getKeyCode() == KeyEvent.VK_TAB;
@@ -415,7 +384,6 @@ public class Compilador extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAbrir;
     private javax.swing.JButton btnCompilar;
-    private javax.swing.JButton btnEjecutar;
     private javax.swing.JButton btnGuardar;
     private javax.swing.JButton btnGuardarComo;
     private javax.swing.JButton btnNuevo;
