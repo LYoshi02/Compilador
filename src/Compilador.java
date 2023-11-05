@@ -60,12 +60,11 @@ public class Compilador extends javax.swing.JFrame {
             timerKeyReleased.restart();
         });
         // Agrega autocompletado en el editor de codigo presionanco ctrl+space
-        String[] sampleKeywords = {"function", "String", "Integer", "private", "public"};
+        String[] sampleKeywords = {"int", "for", "while", "if", "else", "else if"};
         Functions.setAutocompleterJTextComponent(sampleKeywords, jtpCode, () -> {
             timerKeyReleased.restart();
         });
 
-        // Inicializacion de variables necesarias para el compilador
         controladorCompilador = new CompiladorController();
     }
 
