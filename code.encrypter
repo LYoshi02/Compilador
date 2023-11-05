@@ -1,7 +1,3 @@
-int num1 = 1;
-
-for(int i = 0; i < 5; i++) {
-    if (num1 == 1) {
-        printf("num1 %d", num1);
-    }
-}
+int num1 = 1 + 2;
+int num2 = 1 + 2
+num1 = 1 + 2

@@ -138,6 +138,8 @@ public class CompiladorController {
             gramatica.group("OPERACION_ALGEBRAICA", "(NUMERO | OPERACION_ALGEBRAICA | IDENTIFICADOR) (OPERADOR_ALGEBRAICO) "
                     + "(NUMERO | OPERACION_ALGEBRAICA | IDENTIFICADOR)");
         });
+
+        gramatica.delete("OPERADOR_ALGEBRAICO", 1, "Error sintactico {}: el operador algebraico '[]' no está en una declaración [#, %]");
     }
 
     private void definirVariablesNumericas(Grammar gramatica) {
@@ -145,15 +147,27 @@ public class CompiladorController {
 
         gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO PUNTO_COMA", true, identProd);
         gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR PUNTO_COMA");
+
+        gramatica.delete(new String[]{"INTEGER", "FLOAT"}, 2,
+                "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
+        gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO", 3,
+                "Error sintactico {}: falta ';' al final de la línea [#, %]");
+        gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR", 4,
+                "Error sintactico {}: falta ';' al final de la línea [#, %]");
     }
 
     private void definirCadenas(Grammar gramatica) {
         gramatica.group("CADENA", "COMILLAS_DOBLE (IDENTIFICADOR | PORCIENTO)+ COMILLAS_DOBLE", true);
         gramatica.group("CADENA_VACIA", "COMILLAS_DOBLE COMILLAS_DOBLE", true);
+
+        gramatica.delete("COMILLAS_DOBLE", 5, "Error sintactico {}: el signo '[]' no está en una declaración [#, %]");
     }
 
     private void definirAsignacionesVariables(Grammar gramatica) {
         gramatica.group("ASIGNACION_VARIABLE", "IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO PUNTO_COMA");
+        
+        gramatica.group("ASIGNACION_VARIABLE", "IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO", 6,
+                "Error sintactico {}: falta ';' al final de la línea [#, %]");
     }
 
     private void agruparExpresionesLogicas(Grammar gramatica) {
@@ -405,10 +419,10 @@ public class CompiladorController {
             translatedCode += handleCodeTranslation(block, nivel);
         } else {
             ArrayList<String> sentences = separarSentencias(blockOfCode);
-            
+
             for (String sentence : sentences) {
                 sentence = sentence.trim();
-                
+
                 if (sentence.startsWith("int")) {
                     translatedCode += generarEspacios(nivel * 4) + sentence + ";\n";
                 } else if (sentence.startsWith("for") || sentence.startsWith("if")) {
