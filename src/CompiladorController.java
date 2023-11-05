@@ -116,6 +116,8 @@ public class CompiladorController {
         agruparLlamadosFunciones(gramatica);
         agruparSentencias(gramatica);
 
+        eliminarDelimitadores(gramatica);
+        
         gramatica.show();
     }
 
@@ -207,6 +209,15 @@ public class CompiladorController {
         gramatica.group("SENTENCIA", "(SENTENCIA | ESTRUCTURA_CONDICIONAL_IF_COMPLETA | "
                 + "ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA | ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA"
                 + " | ESTRUCTURA_REPETICION_FOR_COMPLETA | ESTRUCTURA_REPETICION_WHILE_COMPLETA)");
+    }
+    
+    private void eliminarDelimitadores(Grammar gramatica) {
+        gramatica.delete(new String[]{"LLAVE_APERTURA", "LLAVE_CIERRE"}, 6,
+                "Error sintáctico {}: la llave '[]' no está contenida en una agrupación [#, %]");
+        gramatica.delete(new String[]{"PARENTESIS_APERTURA", "PARENTESIS_CIERRE"}, 7,
+                "Error sintáctico {}: el paréntesis '[]' no está contenido en una agrupación [#, %]");
+        gramatica.delete(new String[]{"CORCHETE_APERTURA", "CORCHETE_CIERRE"}, 8,
+                "Error sintáctico {}: el corchete '[]' no está contenido en una agrupación [#, %]");
     }
 
     private void semanticAnalysis() {
