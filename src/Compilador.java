@@ -32,7 +32,7 @@ public class Compilador extends javax.swing.JFrame {
 
     private void init() {
         // Setear el titulo de la ventana al ejecutar el programa
-        windowTitle = "Compiler Initial Setup";
+        windowTitle = "Compilador C";
         setTitle(windowTitle);
         // Centrar la ventana en la pantalla
         setLocationRelativeTo(null);
