@@ -118,7 +118,7 @@ public class CompiladorController {
         agruparSentencias(gramatica);
 
         eliminarDelimitadores(gramatica);
-        
+
         gramatica.show();
     }
 
@@ -151,7 +151,7 @@ public class CompiladorController {
     private void definirCadenas(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
         gramatica.group("CADENA", "STRING IDENTIFICADOR (OPERADOR_ASIGNACION (TEXTO | VALOR_NUMERICO | CARACTER))? PUNTO_COMA", true, identProd);
-        
+
         gramatica.delete(new String[]{"STRING"}, 9,
                 "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
         gramatica.group("CADENA", "STRING IDENTIFICADOR OPERADOR_ASIGNACION", 10,
@@ -159,11 +159,11 @@ public class CompiladorController {
         gramatica.group("CADENA", "STRING IDENTIFICADOR OPERADOR_ASIGNACION (TEXTO | VALOR_NUMERICO)", 14,
                 "Error sintactico {}: falta ';' al final de la línea [#, %]");
     }
-    
+
     private void definirCaracteres(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
         gramatica.group("CARACTER", "CHAR IDENTIFICADOR (OPERADOR_ASIGNACION (CARACTER | VALOR_NUMERICO | TEXTO))? PUNTO_COMA", true, identProd);
-        
+
         gramatica.delete(new String[]{"CHAR"}, 9,
                 "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
         gramatica.group("CARACTER", "STRING IDENTIFICADOR OPERADOR_ASIGNACION", 10,
@@ -214,20 +214,22 @@ public class CompiladorController {
     }
 
     private void agruparSentencias(Grammar gramatica) {
-        gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | ASIGNACION_VARIABLE | LLAMADO_FUNCION | CADENA | CARACTER)");
+        gramatica.loopForFunExecUntilChangeNotDetected(() -> {
+            gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | ASIGNACION_VARIABLE | LLAMADO_FUNCION)");
 
-        gramatica.group("ESTRUCTURA_CONDICIONAL_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
-        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
-        gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+            gramatica.group("ESTRUCTURA_CONDICIONAL_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+            gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+            gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
 
-        gramatica.group("ESTRUCTURA_REPETICION_FOR_COMPLETA", "ESTRUCTURA_REPETICION_FOR LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
-        gramatica.group("ESTRUCTURA_REPETICION_WHILE_COMPLETA", "ESTRUCTURA_REPETICION_WHILE LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+            gramatica.group("ESTRUCTURA_REPETICION_FOR_COMPLETA", "ESTRUCTURA_REPETICION_FOR LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
+            gramatica.group("ESTRUCTURA_REPETICION_WHILE_COMPLETA", "ESTRUCTURA_REPETICION_WHILE LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
 
-        gramatica.group("SENTENCIA", "(SENTENCIA | ESTRUCTURA_CONDICIONAL_IF_COMPLETA | "
-                + "ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA | ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA"
-                + " | ESTRUCTURA_REPETICION_FOR_COMPLETA | ESTRUCTURA_REPETICION_WHILE_COMPLETA)");
+            gramatica.group("SENTENCIA", "(SENTENCIA | ESTRUCTURA_CONDICIONAL_IF_COMPLETA | "
+                    + "ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA | ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA"
+                    + " | ESTRUCTURA_REPETICION_FOR_COMPLETA | ESTRUCTURA_REPETICION_WHILE_COMPLETA)");
+        });
     }
-    
+
     private void eliminarDelimitadores(Grammar gramatica) {
         gramatica.delete(new String[]{"LLAVE_APERTURA", "LLAVE_CIERRE"}, 6,
                 "Error sintáctico {}: la llave '[]' no está contenida en una agrupación [#, %]");
@@ -239,48 +241,48 @@ public class CompiladorController {
 
     private void semanticAnalysis() {
         for (Production id : identProd) {
-            switch(id.lexemeRank(0)){
+            switch (id.lexemeRank(0)) {
                 case "int":
-                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")){
-                        if (!(id.lexicalCompRank(-2).equals("NUMERO") || id.lexicalCompRank(0, -1).contains("NUMERO OPERADOR_ALGEBRAICO NUMERO"))){
+                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")) {
+                        if (!(id.lexicalCompRank(-2).equals("NUMERO") || id.lexicalCompRank(0, -1).contains("NUMERO OPERADOR_ALGEBRAICO NUMERO"))) {
                             errors.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
                         } else {
                             identificadores.put(id.lexemeRank(1), id.lexemeRank(-2));
                         }
                     }
-                break;
+                    break;
                 case "float":
-                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")){
-                        if (!(id.lexicalCompRank(-2).equals("NUMERO") || id.lexicalCompRank(0, -1).contains("NUMERO OPERADOR_ALGEBRAICO NUMERO"))){
+                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")) {
+                        if (!(id.lexicalCompRank(-2).equals("NUMERO") || id.lexicalCompRank(0, -1).contains("NUMERO OPERADOR_ALGEBRAICO NUMERO"))) {
                             errors.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
                         } else {
                             identificadores.put(id.lexemeRank(1), id.lexemeRank(-2));
                         }
                     }
-                break;
+                    break;
                 case "string":
-                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")){
-                        if (!(id.lexicalCompRank(-2).equals("TEXTO"))){
+                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")) {
+                        if (!(id.lexicalCompRank(-2).equals("TEXTO"))) {
                             errors.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
                         } else {
                             identificadores.put(id.lexemeRank(1), id.lexemeRank(-4, -2));
                         }
                     }
-                break;
+                    break;
                 case "char":
-                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")){
-                        if (!(id.lexicalCompRank(-2).equals("CARACTER"))){
+                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")) {
+                        if (!(id.lexicalCompRank(-2).equals("CARACTER"))) {
                             errors.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
                         } else {
                             identificadores.put(id.lexemeRank(1), id.lexemeRank(-4, -2));
                         }
                     }
-                break;
+                    break;
             }
             /*                      
             System.out.println(id.lexemeRank(0, -2));
             System.out.println(id.lexicalCompRank(0, -2));
-            */
+             */
         }
     }
 

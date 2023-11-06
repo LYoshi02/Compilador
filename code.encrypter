@@ -1,5 +1,7 @@
-int num1;
+int num1 = 1;
 
-printf("Ingrese un numero: ");
-scanf("%d", &num1);
-printf("Numero ingresado: %d", num1);
+for(int i = 0; i < 5; i++) {
+    if(i >1) {
+        printf("num1 %d", num1);
+    }
+}
