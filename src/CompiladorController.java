@@ -162,13 +162,14 @@ public class CompiladorController {
 
     private void definirCaracteres(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
-        gramatica.group("CARACTER", "CHAR IDENTIFICADOR (OPERADOR_ASIGNACION (CARACTER | VALOR_NUMERICO | TEXTO))? PUNTO_COMA", true, identProd);
+        gramatica.group("VARIABLE_CARACTER", "CHAR IDENTIFICADOR (OPERADOR_ASIGNACION (CARACTER | VALOR_NUMERICO | TEXTO))? "
+                + "PUNTO_COMA", true, identProd);
 
         gramatica.delete(new String[]{"CHAR"}, 9,
                 "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
-        gramatica.group("CARACTER", "STRING IDENTIFICADOR OPERADOR_ASIGNACION", 10,
+        gramatica.group("VARIABLE_CARACTER", "STRING IDENTIFICADOR OPERADOR_ASIGNACION", 10,
                 "Error sintactico {}: asignación inválida [#, %]");
-        gramatica.group("CARACTER", "STRING IDENTIFICADOR OPERADOR_ASIGNACION (TEXTO | VALOR_NUMERICO)", 14,
+        gramatica.group("VARIABLE_CARACTER", "STRING IDENTIFICADOR OPERADOR_ASIGNACION (TEXTO | VALOR_NUMERICO)", 14,
                 "Error sintactico {}: falta ';' al final de la línea [#, %]");
     }
 
@@ -215,7 +216,7 @@ public class CompiladorController {
 
     private void agruparSentencias(Grammar gramatica) {
         gramatica.loopForFunExecUntilChangeNotDetected(() -> {
-            gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | ASIGNACION_VARIABLE | LLAMADO_FUNCION)");
+            gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | VARIABLE_CARACTER | ASIGNACION_VARIABLE | LLAMADO_FUNCION)");
 
             gramatica.group("ESTRUCTURA_CONDICIONAL_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
             gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
@@ -374,7 +375,7 @@ public class CompiladorController {
             for (String sentence : sentences) {
                 sentence = sentence.trim();
 
-                if (sentence.startsWith("int")) {
+                if (sentence.startsWith("int") || sentence.startsWith("char")) {
                     translatedCode += generarEspacios(nivel * 4) + sentence + ";\n";
                 } else if (sentence.startsWith("for") || sentence.startsWith("if")) {
                     String nextBlockOfCode = blocksOfCode.get(1);
