@@ -35,6 +35,7 @@ Comentario = {ComentarioTradicional} | {FinDeLineaComentario} | {ComentarioDeDoc
 int { return token(yytext(), "INTEGER", yyline, yycolumn); }
 char { return token(yytext(), "CHAR", yyline, yycolumn); }
 float { return token(yytext(), "FLOAT", yyline, yycolumn); }
+string { return token(yytext(), "STRING", yyline, yycolumn); }
 
 /* -- PALABRAS RESERVADAS -- */
 /* Bucles */
@@ -107,6 +108,8 @@ main { return token(yytext(), "MAIN", yyline, yycolumn); }
 
 /* Numero */
 {Numero} { return token(yytext(), "NUMERO", yyline, yycolumn); }
+\"[^\"]*\" { return token(yytext(), "TEXTO", yyline, yycolumn); }
+\'.' { return token(yytext(), "CARACTER", yyline, yycolumn); }
 
 /* Signos de puntuacion */
 \. { return token(yytext(), "PUNTO", yyline, yycolumn); }

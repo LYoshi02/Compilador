@@ -1,2 +1,4 @@
 /dist/
 /src/salida/*
+/nbproject/private/
+/build/
