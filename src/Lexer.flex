@@ -35,7 +35,6 @@ Comentario = {ComentarioTradicional} | {FinDeLineaComentario} | {ComentarioDeDoc
 int { return token(yytext(), "INTEGER", yyline, yycolumn); }
 char { return token(yytext(), "CHAR", yyline, yycolumn); }
 float { return token(yytext(), "FLOAT", yyline, yycolumn); }
-string { return token(yytext(), "STRING", yyline, yycolumn); }
 
 /* -- PALABRAS RESERVADAS -- */
 /* Bucles */

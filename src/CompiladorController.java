@@ -106,7 +106,6 @@ public class CompiladorController {
 
         agruparExpresionesAlgebraicas(gramatica);
 
-        definirCadenas(gramatica);
         definirCaracteres(gramatica);
         definirVariablesNumericas(gramatica);
         definirAsignacionesVariables(gramatica);
@@ -148,18 +147,6 @@ public class CompiladorController {
                 "Error sintactico {}: falta ';' al final de la línea [#, %]");
     }
 
-    private void definirCadenas(Grammar gramatica) {
-        gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
-        gramatica.group("CADENA", "STRING IDENTIFICADOR (OPERADOR_ASIGNACION (TEXTO | VALOR_NUMERICO | CARACTER))? PUNTO_COMA", true, identProd);
-
-        gramatica.delete(new String[]{"STRING"}, 9,
-                "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
-        gramatica.group("CADENA", "STRING IDENTIFICADOR OPERADOR_ASIGNACION", 10,
-                "Error sintactico {}: asignación inválida [#, %]");
-        gramatica.group("CADENA", "STRING IDENTIFICADOR OPERADOR_ASIGNACION (TEXTO | VALOR_NUMERICO)", 14,
-                "Error sintactico {}: falta ';' al final de la línea [#, %]");
-    }
-
     private void definirCaracteres(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
         gramatica.group("VARIABLE_CARACTER", "CHAR IDENTIFICADOR (OPERADOR_ASIGNACION (CARACTER | VALOR_NUMERICO | TEXTO))? "
@@ -167,10 +154,6 @@ public class CompiladorController {
 
         gramatica.delete(new String[]{"CHAR"}, 9,
                 "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
-        gramatica.group("VARIABLE_CARACTER", "STRING IDENTIFICADOR OPERADOR_ASIGNACION", 10,
-                "Error sintactico {}: asignación inválida [#, %]");
-        gramatica.group("VARIABLE_CARACTER", "STRING IDENTIFICADOR OPERADOR_ASIGNACION (TEXTO | VALOR_NUMERICO)", 14,
-                "Error sintactico {}: falta ';' al final de la línea [#, %]");
     }
 
     private void definirAsignacionesVariables(Grammar gramatica) {
@@ -258,15 +241,6 @@ public class CompiladorController {
                             errors.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
                         } else {
                             identificadores.put(id.lexemeRank(1), id.lexemeRank(-2));
-                        }
-                    }
-                    break;
-                case "string":
-                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")) {
-                        if (!(id.lexicalCompRank(-2).equals("TEXTO"))) {
-                            errors.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
-                        } else {
-                            identificadores.put(id.lexemeRank(1), id.lexemeRank(-4, -2));
                         }
                     }
                     break;
