@@ -106,6 +106,7 @@ public class CompiladorController {
 
         agruparExpresionesAlgebraicas(gramatica);
 
+        definirArreglos(gramatica);
         definirCaracteres(gramatica);
         definirVariablesNumericas(gramatica);
         definirAsignacionesVariables(gramatica);
@@ -133,7 +134,17 @@ public class CompiladorController {
 
         gramatica.delete("OPERADOR_ALGEBRAICO", 1, "Error sintactico {}: el operador algebraico '[]' no está en una declaración [#, %]");
     }
-
+    
+    private void definirArreglos(Grammar gramatica) {
+        gramatica.group("ARREGLO_NUMERICO", "(INTEGER | FLOAT) IDENTIFICADOR CORCHETE_APERTURA (NUMERO)? CORCHETE_CIERRE "
+                + "(OPERADOR_ASIGNACION LLAVE_APERTURA (NUMERO | (NUMERO (COMA NUMERO)+))? LLAVE_CIERRE)? PUNTO_COMA");
+        
+        gramatica.group("ARREGLO_CARACTERES", "CHAR IDENTIFICADOR CORCHETE_APERTURA (NUMERO)? CORCHETE_CIERRE "
+                + "(OPERADOR_ASIGNACION LLAVE_APERTURA (CARACTER | (CARACTER (COMA CARACTER)+))? LLAVE_CIERRE)? PUNTO_COMA");
+        gramatica.group("ARREGLO_CARACTERES", "CHAR IDENTIFICADOR CORCHETE_APERTURA (NUMERO)? CORCHETE_CIERRE "
+                + "(OPERADOR_ASIGNACION TEXTO)? PUNTO_COMA");
+    }
+ 
     private void definirVariablesNumericas(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
 
@@ -146,7 +157,7 @@ public class CompiladorController {
         gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR", 4,
                 "Error sintactico {}: falta ';' al final de la línea [#, %]");
     }
-
+    
     private void definirCaracteres(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
         gramatica.group("VARIABLE_CARACTER", "CHAR IDENTIFICADOR (OPERADOR_ASIGNACION (CARACTER | IDENTIFICADOR))? "
@@ -155,7 +166,7 @@ public class CompiladorController {
         gramatica.delete(new String[]{"CHAR"}, 9,
                 "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
     }
-
+    
     private void definirAsignacionesVariables(Grammar gramatica) {
         gramatica.group("ASIGNACION_VARIABLE", "IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO PUNTO_COMA");
 
@@ -199,7 +210,8 @@ public class CompiladorController {
 
     private void agruparSentencias(Grammar gramatica) {
         gramatica.loopForFunExecUntilChangeNotDetected(() -> {
-            gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | VARIABLE_CARACTER | ASIGNACION_VARIABLE | LLAMADO_FUNCION)");
+            gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | VARIABLE_CARACTER | ASIGNACION_VARIABLE | "
+                    + "LLAMADO_FUNCION | ARREGLO_NUMERICO | ARREGLO_CARACTERES)");
 
             gramatica.group("ESTRUCTURA_CONDICIONAL_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
             gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
