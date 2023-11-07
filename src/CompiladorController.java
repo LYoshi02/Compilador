@@ -149,7 +149,7 @@ public class CompiladorController {
 
     private void definirCaracteres(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
-        gramatica.group("VARIABLE_CARACTER", "CHAR IDENTIFICADOR (OPERADOR_ASIGNACION (CARACTER | VALOR_NUMERICO | TEXTO))? "
+        gramatica.group("VARIABLE_CARACTER", "CHAR IDENTIFICADOR (OPERADOR_ASIGNACION (CARACTER | IDENTIFICADOR))? "
                 + "PUNTO_COMA", true, identProd);
 
         gramatica.delete(new String[]{"CHAR"}, 9,

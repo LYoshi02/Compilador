@@ -1,1 +1,3 @@
 char caracter = 'a';
+char caracter2 = caracter;
+char caracter3 = "a2";
