@@ -1,3 +1,5 @@
-int nums[5] = {1,2,3,4,5};
-char string1[] = {'h', 'o', 'l', 'a'};
-char string2[] = "hola";
+int num1 = 01;
+
+printf("Ingrese un numero: ");
+scanf("%d", &num1);
+printf("Numero ingresado: %d", num1);

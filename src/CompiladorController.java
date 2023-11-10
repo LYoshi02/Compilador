@@ -106,8 +106,8 @@ public class CompiladorController {
 
         agruparExpresionesAlgebraicas(gramatica);
 
-        definirArreglos(gramatica);
-        definirCaracteres(gramatica);
+        // definirArreglos(gramatica);
+        // definirCaracteres(gramatica);
         definirVariablesNumericas(gramatica);
         definirAsignacionesVariables(gramatica);
 
@@ -145,19 +145,6 @@ public class CompiladorController {
                 + "(OPERADOR_ASIGNACION TEXTO)? PUNTO_COMA");
     }
  
-    private void definirVariablesNumericas(Grammar gramatica) {
-        gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
-
-        gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR (OPERADOR_ASIGNACION (VALOR_NUMERICO | IDENTIFICADOR))? PUNTO_COMA", true, identProd);
-
-        gramatica.delete(new String[]{"INTEGER", "FLOAT"}, 2,
-                "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
-        gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO", 3,
-                "Error sintactico {}: falta ';' al final de la línea [#, %]");
-        gramatica.group("VARIABLE_NUMERICA", "(INTEGER | FLOAT) IDENTIFICADOR", 4,
-                "Error sintactico {}: falta ';' al final de la línea [#, %]");
-    }
-    
     private void definirCaracteres(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
         gramatica.group("VARIABLE_CARACTER", "CHAR IDENTIFICADOR (OPERADOR_ASIGNACION (CARACTER | IDENTIFICADOR))? "
@@ -165,6 +152,19 @@ public class CompiladorController {
 
         gramatica.delete(new String[]{"CHAR"}, 9,
                 "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
+    }
+    
+    private void definirVariablesNumericas(Grammar gramatica) {
+        gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
+
+        gramatica.group("VARIABLE_NUMERICA", "INTEGER IDENTIFICADOR (OPERADOR_ASIGNACION (VALOR_NUMERICO | IDENTIFICADOR))? PUNTO_COMA", true, identProd);
+
+        gramatica.delete(new String[]{"INTEGER"}, 2,
+                "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
+        gramatica.group("VARIABLE_NUMERICA", "INTEGER IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO", 3,
+                "Error sintactico {}: falta ';' al final de la línea [#, %]");
+        gramatica.group("VARIABLE_NUMERICA", "INTEGER IDENTIFICADOR", 4,
+                "Error sintactico {}: falta ';' al final de la línea [#, %]");
     }
     
     private void definirAsignacionesVariables(Grammar gramatica) {
@@ -210,8 +210,7 @@ public class CompiladorController {
 
     private void agruparSentencias(Grammar gramatica) {
         gramatica.loopForFunExecUntilChangeNotDetected(() -> {
-            gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | VARIABLE_CARACTER | ASIGNACION_VARIABLE | "
-                    + "LLAMADO_FUNCION | ARREGLO_NUMERICO | ARREGLO_CARACTERES)");
+            gramatica.group("SENTENCIA", "(VARIABLE_NUMERICA | ASIGNACION_VARIABLE | LLAMADO_FUNCION)");
 
             gramatica.group("ESTRUCTURA_CONDICIONAL_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
             gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA", "ESTRUCTURA_CONDICIONAL_ELSE_IF LLAVE_APERTURA (SENTENCIA)* LLAVE_CIERRE");
@@ -247,29 +246,25 @@ public class CompiladorController {
                         }
                     }
                     break;
-                case "float":
-                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")) {
-                        if (!(id.lexicalCompRank(-2).equals("NUMERO") || id.lexicalCompRank(0, -1).contains("NUMERO OPERADOR_ALGEBRAICO NUMERO"))) {
-                            errors.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
-                        } else {
-                            identificadores.put(id.lexemeRank(1), id.lexemeRank(-2));
-                        }
-                    }
-                    break;
-                case "char":
-                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")) {
-                        if (!(id.lexicalCompRank(-2).equals("CARACTER"))) {
-                            errors.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
-                        } else {
-                            identificadores.put(id.lexemeRank(1), id.lexemeRank(-4, -2));
-                        }
-                    }
-                    break;
+//                case "float":
+//                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")) {
+//                        if (!(id.lexicalCompRank(-2).equals("NUMERO") || id.lexicalCompRank(0, -1).contains("NUMERO OPERADOR_ALGEBRAICO NUMERO"))) {
+//                            errors.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
+//                        } else {
+//                            identificadores.put(id.lexemeRank(1), id.lexemeRank(-2));
+//                        }
+//                    }
+//                    break;
+//                case "char":
+//                    if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")) {
+//                        if (!(id.lexicalCompRank(-2).equals("CARACTER"))) {
+//                            errors.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
+//                        } else {
+//                            identificadores.put(id.lexemeRank(1), id.lexemeRank(-4, -2));
+//                        }
+//                    }
+//                    break;
             }
-            /*                      
-            System.out.println(id.lexemeRank(0, -2));
-            System.out.println(id.lexicalCompRank(0, -2));
-             */
         }
     }
 
