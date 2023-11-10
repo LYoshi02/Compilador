@@ -91,7 +91,7 @@ public class Compilador extends javax.swing.JFrame {
     }
 
     private void printConsole() {
-        ArrayList<ErrorLSSL> compilationErrors = controladorCompilador.getErrors();
+        ArrayList<ErrorLSSL> compilationErrors = controladorCompilador.getErrores();
 
         if (!compilationErrors.isEmpty()) {
             String errorMessage = formatCompilationErrorMessage(compilationErrors);

@@ -33,14 +33,14 @@ import java.util.regex.Pattern;
 public class CompiladorController {
 
     private ArrayList<Token> tokens;
-    private ArrayList<ErrorLSSL> errors;
-    private ArrayList<Production> identProd;
+    private ArrayList<ErrorLSSL> errores;
+    private ArrayList<Production> producciones;
     private HashMap<String, String> identificadores;
 
     public CompiladorController() {
         this.tokens = new ArrayList();
-        this.errors = new ArrayList();
-        this.identProd = new ArrayList();
+        this.errores = new ArrayList();
+        this.producciones = new ArrayList();
         this.identificadores = new HashMap();
     }
 
@@ -48,33 +48,33 @@ public class CompiladorController {
         return tokens;
     }
 
-    public ArrayList<ErrorLSSL> getErrors() {
-        return errors;
+    public ArrayList<ErrorLSSL> getErrores() {
+        return errores;
     }
 
-    public ArrayList<Production> getIdentProd() {
-        return identProd;
+    public ArrayList<Production> getProducciones() {
+        return producciones;
     }
 
-    public void compilar(byte[] bytesCodeText, String fileName) {
+    public void compilar(byte[] codigoFuente, String nombreArchivoFuente) {
         resetearCompilador();
-        lexicalAnalysis(bytesCodeText);
-        syntacticAnalysis();
-        semanticAnalysis();
+        analisisLexico(codigoFuente);
+        analisisSintactico();
+        analisisSemantico();
 
-        if (errors.isEmpty()) {
-            generateSourceFile(fileName);
+        if (errores.isEmpty()) {
+            generarArchivoSalida(nombreArchivoFuente);
         }
     }
 
     private void resetearCompilador() {
         tokens.clear();
-        errors.clear();
-        identProd.clear();
+        errores.clear();
+        producciones.clear();
         identificadores.clear();
     }
 
-    private void lexicalAnalysis(byte[] bytesCodeText) {
+    private void analisisLexico(byte[] bytesCodeText) {
         Lexer lexer;
 
         try {
@@ -99,9 +99,10 @@ public class CompiladorController {
         }
     }
 
-    private void syntacticAnalysis() {
-        Grammar gramatica = new Grammar(tokens, errors);
+    private void analisisSintactico() {
+        Grammar gramatica = new Grammar(tokens, errores);
 
+        // Realiza las agrupaciones de la gramatica
         eliminarTokensDeErrorLexico(gramatica);
 
         agruparExpresionesAlgebraicas(gramatica);
@@ -119,6 +120,7 @@ public class CompiladorController {
 
         eliminarDelimitadores(gramatica);
 
+        // Muestra las agrupaciones realizadas en la consola
         gramatica.show();
     }
 
@@ -151,7 +153,7 @@ public class CompiladorController {
     private void definirCaracteres(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
         gramatica.group("VARIABLE_CARACTER", "CHAR IDENTIFICADOR (OPERADOR_ASIGNACION (CARACTER | IDENTIFICADOR))? "
-                + "PUNTO_COMA", true, identProd);
+                + "PUNTO_COMA", true, producciones);
 
         gramatica.delete(new String[]{"CHAR"}, 9,
                 "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
@@ -160,7 +162,7 @@ public class CompiladorController {
     private void definirVariablesNumericas(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
 
-        gramatica.group("VARIABLE_NUMERICA", "INTEGER IDENTIFICADOR (OPERADOR_ASIGNACION (VALOR_NUMERICO | IDENTIFICADOR))? PUNTO_COMA", true, identProd);
+        gramatica.group("VARIABLE_NUMERICA", "INTEGER IDENTIFICADOR (OPERADOR_ASIGNACION (VALOR_NUMERICO | IDENTIFICADOR))? PUNTO_COMA", true, producciones);
 
         gramatica.delete(new String[]{"INTEGER"}, 2,
                 "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
@@ -254,13 +256,13 @@ public class CompiladorController {
                 "Error sintáctico {}: el corchete '[]' no está contenido en una agrupación [#, %]");
     }
 
-    private void semanticAnalysis() {
-        for (Production id : identProd) {
+    private void analisisSemantico() {
+        for (Production id : producciones) {
             switch (id.lexemeRank(0)) {
                 case "int":
                     if (id.lexicalCompRank(0, -1).contains("OPERADOR_ASIGNACION")) {
                         if (!(id.lexicalCompRank(-2).equals("NUMERO") || id.lexicalCompRank(0, -1).contains("NUMERO OPERADOR_ALGEBRAICO NUMERO"))) {
-                            errors.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
+                            errores.add(new ErrorLSSL(1, "Error semántico {}: valor no compatible con el tipo de dato [#, %]", id, true));
                         } else {
                             identificadores.put(id.lexemeRank(1), id.lexemeRank(-2));
                         }
@@ -288,9 +290,9 @@ public class CompiladorController {
         }
     }
 
-    private void generateSourceFile(String fileName) {
+    private void generarArchivoSalida(String fileName) {
         String rutaCarpeta = System.getProperty("user.dir") + "/src/salida";
-        String nombreArchivo = convertToPascalCase(fileName);
+        String nombreArchivo = convertirAPascalCase(fileName);
         String rutaArchivo = rutaCarpeta + "/" + nombreArchivo + ".java";
 
         try {
@@ -311,7 +313,7 @@ public class CompiladorController {
             writer.write("import java.util.Scanner;\n\n");
             writer.write("public class " + nombreArchivo + " {\n");
             writer.write(generarEspacios(4) + "public static void main(String[] args) {\n");
-            writer.write(translateCode());
+            writer.write(traducirCodigo());
             writer.write(generarEspacios(4) + "}\n");
             writer.write("}\n");
 
@@ -325,84 +327,84 @@ public class CompiladorController {
         }
     }
 
-    public static String convertToPascalCase(String fileName) {
+    public static String convertirAPascalCase(String nombreArchivo) {
         // Eliminar la extensión ".c" si está presente
-        if (fileName.endsWith(".c")) {
-            fileName = fileName.substring(0, fileName.length() - 2);
+        if (nombreArchivo.endsWith(".c")) {
+            nombreArchivo = nombreArchivo.substring(0, nombreArchivo.length() - 2);
         }
 
         // Dividir el nombre en palabras utilizando "-", "_" y mayúsculas como separadores
-        String[] parts = fileName.split("[-_A-Z]");
+        String[] partesArchivo = nombreArchivo.split("[-_A-Z]");
 
-        StringBuilder pascalCaseName = new StringBuilder();
-        for (String part : parts) {
-            if (!part.isEmpty()) {
+        StringBuilder nombrePascalCase = new StringBuilder();
+        for (String parte : partesArchivo) {
+            if (!parte.isEmpty()) {
                 // Convertir la primera letra de cada palabra a mayúscula
-                pascalCaseName.append(Character.toUpperCase(part.charAt(0)));
-                if (part.length() > 1) {
-                    pascalCaseName.append(part.substring(1).toLowerCase());
+                nombrePascalCase.append(Character.toUpperCase(parte.charAt(0)));
+                if (parte.length() > 1) {
+                    nombrePascalCase.append(parte.substring(1).toLowerCase());
                 }
             }
         }
 
-        return pascalCaseName.toString();
+        return nombrePascalCase.toString();
     }
 
-    private String translateCode() {
-        CodeBlock codeBlock = Functions.splitCodeInCodeBlocks(tokens, "{", "}", ";");
-        ArrayList<String> blocksOfCode = codeBlock.getBlocksOfCodeInOrderOfExec();
+    private String traducirCodigo() {
+        CodeBlock bloquesCodigo = Functions.splitCodeInCodeBlocks(tokens, "{", "}", ";");
+        ArrayList<String> bloquesCodigoOrdenados = bloquesCodigo.getBlocksOfCodeInOrderOfExec();
 
-        return handleCodeTranslation(blocksOfCode, 2);
+        return manejarTraduccionCodigo(bloquesCodigoOrdenados, 2);
     }
 
-    private String handleCodeTranslation(ArrayList<String> blocksOfCode, int nivel) {
-        String translatedCode = "";
+    private String manejarTraduccionCodigo(ArrayList<String> bloquesCodigo, int nivel) {
+        String codigoTraducido = "";
         int[] posicionMarcador;
-        ArrayList<String> block;
+        ArrayList<String> bloque;
 
-        if (blocksOfCode.isEmpty()) {
+        if (bloquesCodigo.isEmpty()) {
             return "";
         }
 
-        String blockOfCode = blocksOfCode.get(0);
-        if (blockOfCode.startsWith("~") && blockOfCode.length() == 38) {
-            posicionMarcador = CodeBlock.getPositionOfBothMarkers(blocksOfCode, blockOfCode);
-            block = new ArrayList<>(blocksOfCode.subList(posicionMarcador[0] + 1, posicionMarcador[1]));
+        String bloqueCodigoInicial = bloquesCodigo.get(0);
+        if (bloqueCodigoInicial.startsWith("~") && bloqueCodigoInicial.length() == 38) {
+            posicionMarcador = CodeBlock.getPositionOfBothMarkers(bloquesCodigo, bloqueCodigoInicial);
+            bloque = new ArrayList<>(bloquesCodigo.subList(posicionMarcador[0] + 1, posicionMarcador[1]));
 
-            translatedCode += handleCodeTranslation(block, nivel);
+            codigoTraducido += manejarTraduccionCodigo(bloque, nivel);
         } else {
-            ArrayList<String> sentences = separarSentencias(blockOfCode);
+            ArrayList<String> sentencias = separarSentencias(bloqueCodigoInicial);
 
-            for (String sentence : sentences) {
-                sentence = sentence.trim();
+            for (String sentencia : sentencias) {
+                sentencia = sentencia.trim();
 
-                if (sentence.startsWith("int") ) {
-                    translatedCode += generarEspacios(nivel * 4) + sentence + ";\n";
-                } else if (sentence.startsWith("for") || sentence.startsWith("while") || sentence.startsWith("if")) {
-                    if(blocksOfCode.size() > 1) {
-                        String nextBlockOfCode = blocksOfCode.get(1);
-                        posicionMarcador = CodeBlock.getPositionOfBothMarkers(blocksOfCode, nextBlockOfCode);
-                        block = new ArrayList<>(blocksOfCode.subList(posicionMarcador[0] + 1, posicionMarcador[1]));
+                if (sentencia.startsWith("int") ) {
+                    codigoTraducido += generarEspacios(nivel * 4) + sentencia + ";\n";
+                } else if (sentencia.startsWith("for") || sentencia.startsWith("while") || sentencia.startsWith("if")) {
+                    if(bloquesCodigo.size() > 1) {
+                        String siguienteBloqueCodigo = bloquesCodigo.get(1);
+                        posicionMarcador = CodeBlock.getPositionOfBothMarkers(bloquesCodigo, siguienteBloqueCodigo);
+                        bloque = new ArrayList<>(bloquesCodigo.subList(posicionMarcador[0] + 1, posicionMarcador[1]));
 
-                        translatedCode += generarEspacios(nivel * 4) + sentence + " {\n";
-                        translatedCode += handleCodeTranslation(block, nivel + 1);
-                        translatedCode += generarEspacios(nivel * 4) + "}\n";
+                        codigoTraducido += generarEspacios(nivel * 4) + sentencia + " {\n";
+                        codigoTraducido += manejarTraduccionCodigo(bloque, nivel + 1);
+                        codigoTraducido += generarEspacios(nivel * 4) + "}\n";
                     } else {
-                       translatedCode += generarEspacios(nivel * 4) + sentence + " { }\n"; 
+                       codigoTraducido += generarEspacios(nivel * 4) + sentencia + " { }\n"; 
                     }
-                } else if (sentence.startsWith("printf")) {
-                    String translatedSentence = sentence.replace("printf", "System.out.printf");
-                    translatedCode += generarEspacios(nivel * 4) + translatedSentence + ";\n";
-                } else if (sentence.startsWith("scanf")) {
-                    String translatedSentence = convertirScanfACodigoJava(sentence.replace(" ", ""));
-                    translatedCode += translatedSentence;
-                } else {
-                    translatedCode += generarEspacios(nivel * 4) + sentence + ";\n";
+                } else if (sentencia.startsWith("printf")) {
+                    String sentenciaTraducida = sentencia.replace("printf", "System.out.printf");
+                    codigoTraducido += generarEspacios(nivel * 4) + sentenciaTraducida + ";\n";
+                } else if (sentencia.startsWith("scanf")) {
+                    String sentenciaTraducida = convertirScanfACodigoJava(sentencia.replace(" ", ""));
+                    codigoTraducido += sentenciaTraducida;
+                } else if (!sentencia.isEmpty()) {
+                    codigoTraducido += generarEspacios(nivel * 4) + sentencia + ";\n";
                 }
             }
         }
 
-        return translatedCode;
+        return codigoTraducido;
     }
 
     public String generarEspacios(int cantEspacios) {
@@ -413,35 +415,35 @@ public class CompiladorController {
         return resultado;
     }
 
-    public static ArrayList<String> separarSentencias(String input) {
-        ArrayList<String> partes = new ArrayList<>();
+    public static ArrayList<String> separarSentencias(String sentencias) {
+        ArrayList<String> sentenciasSeparadas = new ArrayList<>();
         Pattern pattern = Pattern.compile("for\\s*\\([^)]*\\)|;");
-        Matcher matcher = pattern.matcher(input);
+        Matcher matcher = pattern.matcher(sentencias);
 
         int start = 0;
         while (matcher.find()) {
             String match = matcher.group();
             if (match.equals(";")) {
-                partes.add(input.substring(start, matcher.start()));
+                sentenciasSeparadas.add(sentencias.substring(start, matcher.start()));
                 start = matcher.end();
             }
         }
 
-        partes.add(input.substring(start));
+        sentenciasSeparadas.add(sentencias.substring(start));
 
-        return partes;
+        return sentenciasSeparadas;
     }
 
     private String convertirScanfACodigoJava(String codigoC) {
         String parametros = codigoC.substring(7, codigoC.length() - 1);
         String[] parametrosVariables = parametros.split(",");
-        String javaCode = "";
+        String codigoJava = "";
 
         for (int i = 1; i < parametrosVariables.length; i++) {
             String variable = parametrosVariables[i].substring(1);
-            javaCode += "\t" + variable + " = new Scanner(System.in).nextInt();\n";
+            codigoJava += "\t" + variable + " = new Scanner(System.in).nextInt();\n";
         }
 
-        return javaCode;
+        return codigoJava;
     }
 }
