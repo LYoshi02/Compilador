@@ -747,7 +747,7 @@ class Lexer {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1:
-            { return token(yytext(), "ERROR", yyline, yycolumn);
+            { return token(yytext(), "ERROR_2", yyline, yycolumn);
             }
             // fall through
           case 41: break;

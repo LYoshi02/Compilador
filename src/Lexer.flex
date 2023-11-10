@@ -127,8 +127,9 @@ main { return token(yytext(), "MAIN", yyline, yycolumn); }
 {Letra}({Letra}|{Digito})* { return token(yytext(), "IDENTIFICADOR", yyline, yycolumn); }
 
 
-/* -- ERRORES DE ANÁLISIS -- */
+/* -- ERRORES DE ANÁLISIS LÉXICO -- */
 /* Numero erroneo */
 0{Numero} { return token(yytext(), "ERROR_1", yyline, yycolumn); }
 
-. { return token(yytext(), "ERROR", yyline, yycolumn); }
+/* Token no reconocido */
+. { return token(yytext(), "ERROR_2", yyline, yycolumn); }

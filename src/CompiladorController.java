@@ -123,7 +123,10 @@ public class CompiladorController {
     }
 
     private void eliminarTokensDeErrorLexico(Grammar gramatica) {
-        gramatica.delete(new String[]{"ERROR", "ERROR_1"}, 1);
+        gramatica.delete("ERROR_1", 1,
+                "Error léxico {}: el número '[]' no está definido correctamente [#, %]");
+        gramatica.delete("ERROR_2", 2,
+                "Error léxico {}: el valor '[]' no es un token válido [#, %]");
     }
 
     private void agruparExpresionesAlgebraicas(Grammar gramatica) {
