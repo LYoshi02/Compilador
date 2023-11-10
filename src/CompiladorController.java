@@ -376,22 +376,28 @@ public class CompiladorController {
             for (String sentence : sentences) {
                 sentence = sentence.trim();
 
-                if (sentence.startsWith("int") || sentence.startsWith("char")) {
+                if (sentence.startsWith("int") ) {
                     translatedCode += generarEspacios(nivel * 4) + sentence + ";\n";
-                } else if (sentence.startsWith("for") || sentence.startsWith("if")) {
-                    String nextBlockOfCode = blocksOfCode.get(1);
-                    posicionMarcador = CodeBlock.getPositionOfBothMarkers(blocksOfCode, nextBlockOfCode);
-                    block = new ArrayList<>(blocksOfCode.subList(posicionMarcador[0] + 1, posicionMarcador[1]));
+                } else if (sentence.startsWith("for") || sentence.startsWith("while") || sentence.startsWith("if")) {
+                    if(blocksOfCode.size() > 1) {
+                        String nextBlockOfCode = blocksOfCode.get(1);
+                        posicionMarcador = CodeBlock.getPositionOfBothMarkers(blocksOfCode, nextBlockOfCode);
+                        block = new ArrayList<>(blocksOfCode.subList(posicionMarcador[0] + 1, posicionMarcador[1]));
 
-                    translatedCode += generarEspacios(nivel * 4) + sentence + " {\n";
-                    translatedCode += handleCodeTranslation(block, nivel + 1);
-                    translatedCode += generarEspacios(nivel * 4) + "}\n";
+                        translatedCode += generarEspacios(nivel * 4) + sentence + " {\n";
+                        translatedCode += handleCodeTranslation(block, nivel + 1);
+                        translatedCode += generarEspacios(nivel * 4) + "}\n";
+                    } else {
+                       translatedCode += generarEspacios(nivel * 4) + sentence + " { }\n"; 
+                    }
                 } else if (sentence.startsWith("printf")) {
                     String translatedSentence = sentence.replace("printf", "System.out.printf");
                     translatedCode += generarEspacios(nivel * 4) + translatedSentence + ";\n";
                 } else if (sentence.startsWith("scanf")) {
                     String translatedSentence = convertirScanfACodigoJava(sentence.replace(" ", ""));
                     translatedCode += translatedSentence;
+                } else {
+                    translatedCode += generarEspacios(nivel * 4) + sentence + ";\n";
                 }
             }
         }
