@@ -189,12 +189,18 @@ public class CompiladorController {
                     + "OPERADOR_RELACIONAL"
                     + "(IDENTIFICADOR | OPERADOR_BOOLEANO | EXPRESION_LOGICA | VALOR_NUMERICO)");
         });
+        
+        gramatica.delete(new String[]{"OPERADOR_BOOLEANO", "OPERADOR_LOGICO" , "OPERADOR_RELACIONAL"}, 7,
+                "Error sintactico {}: el operador lógico '[]' no está en una declaración válida [#, %]");
     }
 
     private void agruparEstructurasCondicionales(Grammar gramatica) {
         gramatica.group("ESTRUCTURA_CONDICIONAL_IF", "IF PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE");
         gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF", "ELSE_IF PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE");
         gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE", "ELSE");
+        
+        gramatica.delete(new String[]{"IF", "ELSE_IF" , "ELSE"}, 8,
+                "Error sintactico {}: la estructura condicional '[]' no está en una declaración válida [#, %]");
     }
 
     private void agruparEstructurasIterativas(Grammar gramatica) {
@@ -204,11 +210,17 @@ public class CompiladorController {
         gramatica.group("ESTRUCTURA_REPETICION_FOR", "FOR PARENTESIS_APERTURA "
                 + "VARIABLE_NUMERICA EXPRESION_LOGICA PUNTO_COMA (INCREMENTO | DECREMENTO) PARENTESIS_CIERRE");
         gramatica.group("ESTRUCTURA_REPETICION_WHILE", "WHILE PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE");
+        
+        gramatica.delete(new String[]{"FOR", "WHILE"}, 9,
+                "Error sintactico {}: la estructura repetitiva '[]' no está en una declaración válida [#, %]");
     }
 
     private void agruparLlamadosFunciones(Grammar gramatica) {
         gramatica.group("LLAMADO_FUNCION", "PRINTF PARENTESIS_APERTURA TEXTO (COMA IDENTIFICADOR)* PARENTESIS_CIERRE PUNTO_COMA");
         gramatica.group("LLAMADO_FUNCION", "SCANF PARENTESIS_APERTURA TEXTO (COMA AMPERSAND IDENTIFICADOR)+ PARENTESIS_CIERRE PUNTO_COMA");
+        
+        gramatica.delete(new String[]{"PRINTF", "SCANF"}, 10,
+                "Error sintactico {}: el llamado a la función '[]' no está en una declaración válida [#, %]");
     }
 
     private void agruparSentencias(Grammar gramatica) {
@@ -226,14 +238,19 @@ public class CompiladorController {
                     + "ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA | ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA"
                     + " | ESTRUCTURA_REPETICION_FOR_COMPLETA | ESTRUCTURA_REPETICION_WHILE_COMPLETA)");
         });
+        
+        gramatica.delete(new String[]{"ESTRUCTURA_CONDICIONAL_IF", "ESTRUCTURA_CONDICIONAL_ELSE_IF" , "ESTRUCTURA_CONDICIONAL_ELSE"}, 8,
+                "Error sintactico {}: la estructura condicional '[]' no está en una declaración válida [#, %]");
+        gramatica.delete(new String[]{"ESTRUCTURA_REPETICION_FOR", "ESTRUCTURA_REPETICION_WHILE"}, 9,
+                "Error sintactico {}: la estructura repetitiva '[]' no está en una declaración válida [#, %]");
     }
 
     private void eliminarDelimitadores(Grammar gramatica) {
-        gramatica.delete(new String[]{"LLAVE_APERTURA", "LLAVE_CIERRE"}, 6,
+        gramatica.delete(new String[]{"LLAVE_APERTURA", "LLAVE_CIERRE"}, 11,
                 "Error sintáctico {}: la llave '[]' no está contenida en una agrupación [#, %]");
-        gramatica.delete(new String[]{"PARENTESIS_APERTURA", "PARENTESIS_CIERRE"}, 7,
+        gramatica.delete(new String[]{"PARENTESIS_APERTURA", "PARENTESIS_CIERRE"}, 12,
                 "Error sintáctico {}: el paréntesis '[]' no está contenido en una agrupación [#, %]");
-        gramatica.delete(new String[]{"CORCHETE_APERTURA", "CORCHETE_CIERRE"}, 8,
+        gramatica.delete(new String[]{"CORCHETE_APERTURA", "CORCHETE_CIERRE"}, 13,
                 "Error sintáctico {}: el corchete '[]' no está contenido en una agrupación [#, %]");
     }
 

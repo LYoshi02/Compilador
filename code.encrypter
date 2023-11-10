@@ -1,5 +1,1 @@
-int num1 = 01;
-
-printf("Ingrese un numero: ");
-scanf("%d", &num1);
-printf("Numero ingresado: %d", num1);
+scanf();
