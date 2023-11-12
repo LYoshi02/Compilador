@@ -391,6 +391,11 @@ public class CompiladorController {
                         codigoTraducido += generarEspacios(nivel * 4) + sentencia + " {\n";
                         codigoTraducido += manejarTraduccionCodigo(bloque, nivel + 1);
                         codigoTraducido += generarEspacios(nivel * 4) + "}\n";
+
+                        if (bloquesCodigo.size() > posicionMarcador[1] + 1) {
+                            ArrayList bloqueDespuesBucle = new ArrayList<>(bloquesCodigo.subList(posicionMarcador[1] + 1, bloquesCodigo.size()));
+                            codigoTraducido += manejarTraduccionCodigo(bloqueDespuesBucle, nivel);
+                        }
                     } else {
                         codigoTraducido += generarEspacios(nivel * 4) + sentencia + " { }\n";
                     }
@@ -405,34 +410,31 @@ public class CompiladorController {
 
                         if (bloquesCodigo.size() > posicionMarcador[1] + 1) {
                             String siguienteBloqueCodigoIf = bloquesCodigo.get(posicionMarcador[1] + 1);
-                            int[] posicionMarcadorIf = {};
+                            int[] posicionMarcadorIf = posicionMarcador;
 
-                            while (siguienteBloqueCodigoIf.contains("else if") || siguienteBloqueCodigoIf.contains("else")) {
-                                if (posicionMarcadorIf.length == 0 && bloquesCodigo.size() > posicionMarcador[1] + 2) {
+                            if (siguienteBloqueCodigoIf.contains("else")) {
+                                if (bloquesCodigo.size() > posicionMarcador[1] + 2) {
                                     posicionMarcadorIf = CodeBlock.getPositionOfBothMarkers(bloquesCodigo,
                                             bloquesCodigo.get(posicionMarcador[1] + 2));
-                                } else if (posicionMarcadorIf.length > 0 && bloquesCodigo.size() > posicionMarcadorIf[1] + 2) {
-                                    posicionMarcadorIf = CodeBlock.getPositionOfBothMarkers(bloquesCodigo,
-                                            bloquesCodigo.get(posicionMarcadorIf[1] + 2));
-                                } else {
-                                    break;
                                 }
 
                                 ArrayList<String> bloqueIf = new ArrayList<>(bloquesCodigo.subList(posicionMarcadorIf[0] - 1, posicionMarcadorIf[1] + 1));
                                 codigoTraducido += generarEspacios(nivel * 4) + "} " + manejarTraduccionCodigo(bloqueIf, nivel);
                             }
-                            
+
                             codigoTraducido += generarEspacios(nivel * 4) + "} \n";
 
                             if (bloquesCodigo.size() > posicionMarcadorIf[1] + 1) {
                                 ArrayList bloqueDespuesIf = new ArrayList<>(bloquesCodigo.subList(posicionMarcadorIf[1] + 1, bloquesCodigo.size()));
                                 codigoTraducido += manejarTraduccionCodigo(bloqueDespuesIf, nivel);
                             }
+                        } else {
+                            codigoTraducido += generarEspacios(nivel * 4) + "} \n";
                         }
                     } else {
                         codigoTraducido += generarEspacios(nivel * 4) + sentencia + " { } \n";
                     }
-                } else if (sentencia.startsWith("else") || sentencia.startsWith("else if")) {
+                } else if (sentencia.startsWith("else")) {
                     if (bloquesCodigo.size() > 1) {
                         String siguienteBloqueCodigo = bloquesCodigo.get(1);
                         posicionMarcador = CodeBlock.getPositionOfBothMarkers(bloquesCodigo, siguienteBloqueCodigo);

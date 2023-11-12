@@ -1,38 +1,18 @@
-int valor;
+int num1;
 
-printf("Ingrese un valor: ");
-scanf("%d", &valor);
+printf("Ingrese un numero: ");
+scanf("%d", &num1);
 
-if (valor == 1) {
+if (num1 == 1) {
     printf("Es 1\n");
 } else  { 
-    printf("El valor es %d\n", valor);
+    printf("El numero es %d\n", num1);
 }
 
-if (valor == 1) {
+printf("Numero ingresado: %d", num1);
+
+if (num1 == 1) {
     printf("Es 1\n");
-} else if (valor == 2) {
-    printf("Es 2\n");
-}
+} 
 
-if (valor == 1) {
-    printf("Es 1\n");
-} else if (valor == 2) {
-    printf("Es 2\n");
-} else  { 
-    printf("El valor es %d\n", valor);
-}
-
-if (valor == 1) {
-    printf("Es 1\n");
-} else if (valor == 2) {
-    printf("Es 2\n");
-} else if (valor == 3) {
-    printf("Es 3\n");
-} else if (valor == 4) {
-    printf("Es 4\n");
-} else  { 
-    printf("El valor es %d\n", valor);
-}
-
-if (valor == 1) { }
+printf("Numero ingresado 2: %d", num1);
