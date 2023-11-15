@@ -16,7 +16,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -139,17 +141,17 @@ public class CompiladorController {
 
         gramatica.delete("OPERADOR_ALGEBRAICO", 1, "Error sintactico {}: el operador algebraico '[]' no está en una declaración [#, %]");
     }
-    
+
     private void definirArreglos(Grammar gramatica) {
         gramatica.group("ARREGLO_NUMERICO", "(INTEGER | FLOAT) IDENTIFICADOR CORCHETE_APERTURA (NUMERO)? CORCHETE_CIERRE "
                 + "(OPERADOR_ASIGNACION LLAVE_APERTURA (NUMERO | (NUMERO (COMA NUMERO)+))? LLAVE_CIERRE)? PUNTO_COMA");
-        
+
         gramatica.group("ARREGLO_CARACTERES", "CHAR IDENTIFICADOR CORCHETE_APERTURA (NUMERO)? CORCHETE_CIERRE "
                 + "(OPERADOR_ASIGNACION LLAVE_APERTURA (CARACTER | (CARACTER (COMA CARACTER)+))? LLAVE_CIERRE)? PUNTO_COMA");
         gramatica.group("ARREGLO_CARACTERES", "CHAR IDENTIFICADOR CORCHETE_APERTURA (NUMERO)? CORCHETE_CIERRE "
                 + "(OPERADOR_ASIGNACION TEXTO)? PUNTO_COMA");
     }
- 
+
     private void definirCaracteres(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
         gramatica.group("VARIABLE_CARACTER", "CHAR IDENTIFICADOR (OPERADOR_ASIGNACION (CARACTER | IDENTIFICADOR))? "
@@ -158,7 +160,7 @@ public class CompiladorController {
         gramatica.delete(new String[]{"CHAR"}, 9,
                 "Error sintactico {}: el tipo de dato '[]' no está en una declaración válida [#, %]");
     }
-    
+
     private void definirVariablesNumericas(Grammar gramatica) {
         gramatica.group("VALOR_NUMERICO", "(NUMERO | OPERACION_ALGEBRAICA)", true);
 
@@ -171,7 +173,7 @@ public class CompiladorController {
         gramatica.group("VARIABLE_NUMERICA", "INTEGER IDENTIFICADOR", 4,
                 "Error sintactico {}: falta ';' al final de la línea [#, %]");
     }
-    
+
     private void definirAsignacionesVariables(Grammar gramatica) {
         gramatica.group("ASIGNACION_VARIABLE", "IDENTIFICADOR OPERADOR_ASIGNACION VALOR_NUMERICO PUNTO_COMA");
 
@@ -191,8 +193,8 @@ public class CompiladorController {
                     + "OPERADOR_RELACIONAL"
                     + "(IDENTIFICADOR | OPERADOR_BOOLEANO | EXPRESION_LOGICA | VALOR_NUMERICO)");
         });
-        
-        gramatica.delete(new String[]{"OPERADOR_BOOLEANO", "OPERADOR_LOGICO" , "OPERADOR_RELACIONAL"}, 7,
+
+        gramatica.delete(new String[]{"OPERADOR_BOOLEANO", "OPERADOR_LOGICO", "OPERADOR_RELACIONAL"}, 7,
                 "Error sintactico {}: el operador lógico '[]' no está en una declaración válida [#, %]");
     }
 
@@ -200,8 +202,8 @@ public class CompiladorController {
         gramatica.group("ESTRUCTURA_CONDICIONAL_IF", "IF PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE");
         gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE_IF", "ELSE_IF PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE");
         gramatica.group("ESTRUCTURA_CONDICIONAL_ELSE", "ELSE");
-        
-        gramatica.delete(new String[]{"IF", "ELSE_IF" , "ELSE"}, 8,
+
+        gramatica.delete(new String[]{"IF", "ELSE_IF", "ELSE"}, 8,
                 "Error sintactico {}: la estructura condicional '[]' no está en una declaración válida [#, %]");
     }
 
@@ -212,7 +214,7 @@ public class CompiladorController {
         gramatica.group("ESTRUCTURA_REPETICION_FOR", "FOR PARENTESIS_APERTURA "
                 + "VARIABLE_NUMERICA EXPRESION_LOGICA PUNTO_COMA (INCREMENTO | DECREMENTO) PARENTESIS_CIERRE");
         gramatica.group("ESTRUCTURA_REPETICION_WHILE", "WHILE PARENTESIS_APERTURA EXPRESION_LOGICA PARENTESIS_CIERRE");
-        
+
         gramatica.delete(new String[]{"FOR", "WHILE"}, 9,
                 "Error sintactico {}: la estructura repetitiva '[]' no está en una declaración válida [#, %]");
     }
@@ -220,7 +222,7 @@ public class CompiladorController {
     private void agruparLlamadosFunciones(Grammar gramatica) {
         gramatica.group("LLAMADO_FUNCION", "PRINTF PARENTESIS_APERTURA TEXTO (COMA IDENTIFICADOR)* PARENTESIS_CIERRE PUNTO_COMA");
         gramatica.group("LLAMADO_FUNCION", "SCANF PARENTESIS_APERTURA TEXTO (COMA AMPERSAND IDENTIFICADOR)+ PARENTESIS_CIERRE PUNTO_COMA");
-        
+
         gramatica.delete(new String[]{"PRINTF", "SCANF"}, 10,
                 "Error sintactico {}: el llamado a la función '[]' no está en una declaración válida [#, %]");
     }
@@ -240,8 +242,8 @@ public class CompiladorController {
                     + "ESTRUCTURA_CONDICIONAL_ELSE_IF_COMPLETA | ESTRUCTURA_CONDICIONAL_ELSE_COMPLETA"
                     + " | ESTRUCTURA_REPETICION_FOR_COMPLETA | ESTRUCTURA_REPETICION_WHILE_COMPLETA)");
         });
-        
-        gramatica.delete(new String[]{"ESTRUCTURA_CONDICIONAL_IF", "ESTRUCTURA_CONDICIONAL_ELSE_IF" , "ESTRUCTURA_CONDICIONAL_ELSE"}, 8,
+
+        gramatica.delete(new String[]{"ESTRUCTURA_CONDICIONAL_IF", "ESTRUCTURA_CONDICIONAL_ELSE_IF", "ESTRUCTURA_CONDICIONAL_ELSE"}, 8,
                 "Error sintactico {}: la estructura condicional '[]' no está en una declaración válida [#, %]");
         gramatica.delete(new String[]{"ESTRUCTURA_REPETICION_FOR", "ESTRUCTURA_REPETICION_WHILE"}, 9,
                 "Error sintactico {}: la estructura repetitiva '[]' no está en una declaración válida [#, %]");
@@ -378,10 +380,10 @@ public class CompiladorController {
             for (String sentencia : sentencias) {
                 sentencia = sentencia.trim();
 
-                if (sentencia.startsWith("int") ) {
+                if (sentencia.startsWith("int")) {
                     codigoTraducido += generarEspacios(nivel * 4) + sentencia + ";\n";
-                } else if (sentencia.startsWith("for") || sentencia.startsWith("while") || sentencia.startsWith("if")) {
-                    if(bloquesCodigo.size() > 1) {
+                } else if (sentencia.startsWith("for") || sentencia.startsWith("while")) {
+                    if (bloquesCodigo.size() > 1) {
                         String siguienteBloqueCodigo = bloquesCodigo.get(1);
                         posicionMarcador = CodeBlock.getPositionOfBothMarkers(bloquesCodigo, siguienteBloqueCodigo);
                         bloque = new ArrayList<>(bloquesCodigo.subList(posicionMarcador[0] + 1, posicionMarcador[1]));
@@ -389,8 +391,59 @@ public class CompiladorController {
                         codigoTraducido += generarEspacios(nivel * 4) + sentencia + " {\n";
                         codigoTraducido += manejarTraduccionCodigo(bloque, nivel + 1);
                         codigoTraducido += generarEspacios(nivel * 4) + "}\n";
+
+                        if (bloquesCodigo.size() > posicionMarcador[1] + 1) {
+                            ArrayList bloqueDespuesBucle = new ArrayList<>(bloquesCodigo.subList(posicionMarcador[1] + 1, bloquesCodigo.size()));
+                            codigoTraducido += manejarTraduccionCodigo(bloqueDespuesBucle, nivel);
+                        }
                     } else {
-                       codigoTraducido += generarEspacios(nivel * 4) + sentencia + " { }\n"; 
+                        codigoTraducido += generarEspacios(nivel * 4) + sentencia + " { }\n";
+                    }
+                } else if (sentencia.startsWith("if")) {
+                    if (bloquesCodigo.size() > 1) {
+                        String siguienteBloqueCodigo = bloquesCodigo.get(1);
+                        posicionMarcador = CodeBlock.getPositionOfBothMarkers(bloquesCodigo, siguienteBloqueCodigo);
+                        bloque = new ArrayList<>(bloquesCodigo.subList(posicionMarcador[0] + 1, posicionMarcador[1]));
+
+                        codigoTraducido += "\n" + generarEspacios(nivel * 4) + sentencia + " {\n";
+                        codigoTraducido += manejarTraduccionCodigo(bloque, nivel + 1);
+
+                        if (bloquesCodigo.size() > posicionMarcador[1] + 1) {
+                            String siguienteBloqueCodigoIf = bloquesCodigo.get(posicionMarcador[1] + 1);
+                            int[] posicionMarcadorIf = posicionMarcador;
+
+                            if (siguienteBloqueCodigoIf.contains("else")) {
+                                if (bloquesCodigo.size() > posicionMarcador[1] + 2) {
+                                    posicionMarcadorIf = CodeBlock.getPositionOfBothMarkers(bloquesCodigo,
+                                            bloquesCodigo.get(posicionMarcador[1] + 2));
+                                }
+
+                                ArrayList<String> bloqueIf = new ArrayList<>(bloquesCodigo.subList(posicionMarcadorIf[0] - 1, posicionMarcadorIf[1] + 1));
+                                codigoTraducido += generarEspacios(nivel * 4) + "} " + manejarTraduccionCodigo(bloqueIf, nivel);
+                            }
+
+                            codigoTraducido += generarEspacios(nivel * 4) + "} \n";
+
+                            if (bloquesCodigo.size() > posicionMarcadorIf[1] + 1) {
+                                ArrayList bloqueDespuesIf = new ArrayList<>(bloquesCodigo.subList(posicionMarcadorIf[1] + 1, bloquesCodigo.size()));
+                                codigoTraducido += manejarTraduccionCodigo(bloqueDespuesIf, nivel);
+                            }
+                        } else {
+                            codigoTraducido += generarEspacios(nivel * 4) + "} \n";
+                        }
+                    } else {
+                        codigoTraducido += generarEspacios(nivel * 4) + sentencia + " { } \n";
+                    }
+                } else if (sentencia.startsWith("else")) {
+                    if (bloquesCodigo.size() > 1) {
+                        String siguienteBloqueCodigo = bloquesCodigo.get(1);
+                        posicionMarcador = CodeBlock.getPositionOfBothMarkers(bloquesCodigo, siguienteBloqueCodigo);
+                        bloque = new ArrayList<>(bloquesCodigo.subList(posicionMarcador[0] + 1, posicionMarcador[1]));
+
+                        codigoTraducido += sentencia + " {\n";
+                        codigoTraducido += manejarTraduccionCodigo(bloque, nivel + 1);
+                    } else {
+                        codigoTraducido += sentencia + " { }\n";
                     }
                 } else if (sentencia.startsWith("printf")) {
                     String sentenciaTraducida = sentencia.replace("printf", "System.out.printf");
